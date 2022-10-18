@@ -133,7 +133,7 @@ This code is _very unsafe and very naive_, but remember: our goal when we are in
 
 We need to use reflection to have a look at `x` and try and look at its properties.
 
-The [reflect package](https://godoc.org/reflect) has a function `ValueOf` which returns us a `Value` of a given variable. This has ways for us to inspect a value, including its fields which we use on the next line.
+The [reflect package](https://pkg.go.dev/reflect) has a function `ValueOf` which returns us a `Value` of a given variable. This has ways for us to inspect a value, including its fields which we use on the next line.
 
 We then make some very optimistic assumptions about the value passed in
 
@@ -157,7 +157,7 @@ func TestWalk(t *testing.T) {
 		ExpectedCalls []string
 	}{
 		{
-			"Struct with one string field",
+			"struct with one string field",
 			struct {
 				Name string
 			}{"Chris"},
@@ -188,7 +188,7 @@ Add the following scenario to the `cases`.
 
 ```
 {
-    "Struct with two string fields",
+    "struct with two string fields",
     struct {
         Name string
         City string
@@ -200,8 +200,8 @@ Add the following scenario to the `cases`.
 ## Try to run the test
 
 ```
-=== RUN   TestWalk/Struct_with_two_string_fields
-    --- FAIL: TestWalk/Struct_with_two_string_fields (0.00s)
+=== RUN   TestWalk/struct_with_two_string_fields
+    --- FAIL: TestWalk/struct_with_two_string_fields (0.00s)
         reflection_test.go:40: got [Chris], want [Chris London]
 ```
 
@@ -232,7 +232,7 @@ Add the following case
 
 ```
 {
-    "Struct with non string field",
+    "struct with non string field",
     struct {
         Name string
         Age  int
@@ -244,8 +244,8 @@ Add the following case
 ## Try to run the test
 
 ```
-=== RUN   TestWalk/Struct_with_non_string_field
-    --- FAIL: TestWalk/Struct_with_non_string_field (0.00s)
+=== RUN   TestWalk/struct_with_non_string_field
+    --- FAIL: TestWalk/struct_with_non_string_field (0.00s)
         reflection_test.go:46: got [Chris <int Value>], want [Chris]
 ```
 
@@ -267,7 +267,7 @@ func walk(x interface{}, fn func(input string)) {
 }
 ```
 
-We can do that by checking its [`Kind`](https://godoc.org/reflect#Kind).
+We can do that by checking its [`Kind`](https://pkg.go.dev/reflect#Kind).
 
 ## Refactor
 
@@ -281,7 +281,7 @@ We have been using the anonymous struct syntax to declare types ad-hocly for our
 
 ```
 {
-    "Nested fields",
+    "nested fields",
     struct {
         Name string
         Profile struct {
@@ -318,7 +318,7 @@ Now we can add this to our cases which reads a lot clearer than before
 
 ```
 {
-    "Nested fields",
+    "nested fields",
     Person{
         "Chris",
         Profile{33, "London"},
@@ -331,7 +331,7 @@ Now we can add this to our cases which reads a lot clearer than before
 
 ```
 === RUN   TestWalk/Nested_fields
-    --- FAIL: TestWalk/Nested_fields (0.00s)
+    --- FAIL: TestWalk/nested_fields (0.00s)
         reflection_test.go:54: got [Chris], want [Chris London]
 ```
 
@@ -388,7 +388,7 @@ Add this case
 
 ```
 {
-    "Pointers to things",
+    "pointers to things",
     &Person{
         "Chris",
         Profile{33, "London"},
@@ -400,7 +400,7 @@ Add this case
 ## Try to run the test
 
 ```
-=== RUN   TestWalk/Pointers_to_things
+=== RUN   TestWalk/pointers_to_things
 panic: reflect: call of reflect.Value.NumField on ptr Value [recovered]
     panic: reflect: call of reflect.Value.NumField on ptr Value
 ```
@@ -472,7 +472,7 @@ Next, we need to cover slices.
 
 ```
 {
-    "Slices",
+    "slices",
     []Profile {
         {33, "London"},
         {34, "Reykjavík"},
@@ -484,7 +484,7 @@ Next, we need to cover slices.
 ## Try to run the test
 
 ```
-=== RUN   TestWalk/Slices
+=== RUN   TestWalk/slices
 panic: reflect: call of reflect.Value.NumField on slice Value [recovered]
     panic: reflect: call of reflect.Value.NumField on slice Value
 ```
@@ -596,7 +596,7 @@ Add to the cases
 
 ```
 {
-    "Arrays",
+    "arrays",
     [2]Profile {
         {33, "London"},
         {34, "Reykjavík"},
@@ -608,8 +608,8 @@ Add to the cases
 ## Try to run the test
 
 ```
-=== RUN   TestWalk/Arrays
-    --- FAIL: TestWalk/Arrays (0.00s)
+=== RUN   TestWalk/arrays
+    --- FAIL: TestWalk/arrays (0.00s)
         reflection_test.go:78: got [], want [London Reykjavík]
 ```
 
@@ -647,7 +647,7 @@ The next type we want to handle is `map`.
 
 ```
 {
-    "Maps",
+    "maps",
     map[string]string{
         "Foo": "Bar",
         "Baz": "Boz",
@@ -659,8 +659,8 @@ The next type we want to handle is `map`.
 ## Try to run the test
 
 ```
-=== RUN   TestWalk/Maps
-    --- FAIL: TestWalk/Maps (0.00s)
+=== RUN   TestWalk/maps
+    --- FAIL: TestWalk/maps (0.00s)
         reflection_test.go:86: got [], want [Bar Boz]
 ```
 
