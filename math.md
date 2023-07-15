@@ -193,7 +193,7 @@ and now we get:
     clockface_test.go:17: Got {0 0}, wanted {150 60}
 FAIL
 exit status 1
-FAIL	github.com/gypsydave5/learn-go-with-tests/math/v1/clockface	0.006s
+FAIL	learn-go-with-tests/math/clockface	0.006s
 ```
 
 ### Write enough code to make it pass
@@ -691,7 +691,7 @@ say that they're roughly equal and get on with our lives.
 
 One option to increase the accuracy of these angles would be to use the rational
 type `Rat` from the `math/big` package. But given the objective is to draw an
-SVG and not land on the moon landings I think we can live with a bit of
+SVG and not land on the moon, I think we can live with a bit of
 fuzziness.
 
 ```go
@@ -857,7 +857,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/quii/learn-go-with-tests/math/clockface" // REPLACE THIS!
+	"learn-go-with-tests/math/clockface" // REPLACE THIS!
 )
 
 func main() {
@@ -1007,7 +1007,7 @@ type Svg struct {
 
 We could make adjustments to this if we needed to (like changing the name of the
 struct to `SVG`) but it's definitely good enough to start us off. Paste the
-struct into the `clockface_test` file and let's write a test with it:
+struct into the `clockface_assembly_test` file and let's write a test with it:
 
 ```go
 func TestSVGWriterAtMidnight(t *testing.T) {
@@ -1043,7 +1043,7 @@ informative message.
 ./clockface_acceptance_test.go:41:2: undefined: clockface.SVGWriter
 ```
 
-Looks like we'd better write that `SVGWriter`...
+Looks like we'd better create `SVGWriter.go`...
 
 ```go
 package clockface
@@ -1133,7 +1133,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/gypsydave5/learn-go-with-tests/math/v7b/clockface"
+	"learn-go-with-tests/math/clockface"
 )
 
 func main() {
@@ -1829,7 +1829,7 @@ get the remainder of the current hour divided by 12.
 
 ```
 PASS
-ok  	github.com/gypsydave5/learn-go-with-tests/math/v10/clockface	0.008s
+ok  	learn-go-with-tests/math/clockface	0.008s
 ```
 ### Write the test first
 
@@ -2006,7 +2006,7 @@ The tests will soon tell me if I'm wrong.
 
 ```
 PASS
-ok  	github.com/gypsydave5/learn-go-with-tests/math/v11/clockface	0.009s
+ok  	learn-go-with-tests/math/clockface	0.009s
 ```
 <!--
 Here endeth v11
