@@ -73,7 +73,7 @@ working in the way you expect, but a test that tells you that the whole
 thing you're trying to achieve - the 'feature' - is complete.
 
 These tests are sometimes called 'acceptance tests', sometimes called
-'feature test'. The idea is that you write a really high level test to
+'feature tests'. The idea is that you write a really high level test to
 describe what you're trying to achieve - a user clicks a button on a website,
 and they see a complete list of the Pokémon they've caught, for instance.
 When we've written that test, we can then write more tests - unit tests -
@@ -85,7 +85,7 @@ the original acceptance test pass.
 
 Something like this _classic_ picture by Nat Pryce and Steve Freeman
 
-![img.png](TDD-outside-in.jpg)
+![Outside-in feedback loops in TDD](TDD-outside-in.jpg)
 
 Anyway, let's try and write that acceptance test - the one that will let us
 know when we're done.
@@ -131,6 +131,7 @@ So my first test looks like this:
 package clockface_test
 
 import (
+    "projectpath/clockface"
 	"testing"
 	"time"
 )
@@ -173,7 +174,7 @@ package clockface
 
 import "time"
 
-// A Point represents a two dimensional Cartesian coordinate
+// A Point represents a two-dimensional Cartesian coordinate
 type Point struct {
 	X float64
 	Y float64
@@ -313,13 +314,20 @@ going on - so let's write a test! We don't need to solve the whole problem in
 one go - let's start off with working out the correct angle, in radians, for the
 second hand at a particular time.
 
-I'm going to write these tests _within_ the `clockface` package; they may never
-get exported, and they may get deleted (or moved) once I have a better grip on
-what's going on.
-
-I'm also going to _comment out_ the acceptance test that I was working on while
+I'm going to _comment out_ the acceptance test that I was working on while
 I'm working on these tests - I don't want to get distracted by that test while
 I'm getting this one to pass.
+
+### A recap on packages
+
+At the moment, our acceptance tests are in the `clockface_test` package. Our tests can 
+be outside of the `clockface` package - as long as their name ends with `_test.go` they 
+can be run.
+
+I'm going to write these radians tests _within_ the `clockface` package; they may never
+get exported, and they may get deleted (or moved) once I have a better grip on
+what's going on. I'll rename my acceptance test file to `clockface_acceptance_test.go`, 
+so that I can create a _new_ file called `clockface_test` to test seconds in radians.
 
 ```go
 package clockface
@@ -1142,7 +1150,7 @@ func main() {
 }
 ```
 
-This is what [things should look like now](https://github.com/quii/learn-go-with-tests/blob/main/math/v7b/clockface).
+This is what [things should look like now](https://github.com/quii/learn-go-with-tests/tree/main/math/v7b/clockface).
 
 And we can write a test for another time following the same pattern, but not
 before...
@@ -1269,7 +1277,7 @@ func containsLine(l Line, ls []Line) bool {
 }
 ```
 
-Here's what [it looks like](https://github.com/quii/learn-go-with-tests/blob/main/math/v7c/clockface)
+Here's what [it looks like](https://github.com/quii/learn-go-with-tests/tree/main/math/v7c/clockface)
 
 Now _that's_ what I call an acceptance test!
 
@@ -1431,7 +1439,7 @@ PASS
 ok  	clockface	0.007s
 ```
 
-Nice and easy. This is what things [look like now](https://github.com/quii/learn-go-with-tests/blob/main/math/v8/clockface/clockface_acceptance_test.go)
+Nice and easy. This is what things [look like now](https://github.com/quii/learn-go-with-tests/tree/main/math/v8/clockface/clockface_acceptance_test.go)
 
 ### Repeat for new requirements
 
