@@ -1,8 +1,14 @@
 # Working without mocks, stubs and spies
 
-This chapter delves into the world of test doubles and explores how they influence the testing and development process. We'll uncover the limitations of traditional mocks, stubs, and spies and introduce a more efficient and adaptable approach using fakes and contracts. These methods simplify testing, enhance local development experiences, and streamline the management of evolving dependencies.
+This chapter delves into the world of test doubles and explores how they influence the testing and development process. We'll uncover the limitations of traditional mocks, stubs, and spies and introduce a more efficient and adaptable approach using fakes and contracts.
 
-This is a longer chapter than normal, so as a palette cleanser, you might want to explore an [example repo first](https://github.com/quii/go-fakes-and-contracts). In particular, check out the [planner test](https://github.com/quii/go-fakes-and-contracts/blob/main/domain/planner/planner_test.go).
+## tl;dr
+
+- Mocks, spies and stubs encourage you to encode assumptions of the behaviour of your dependencies ad-hocly in each test.
+- These assumptions are usually not validated beyond manual checking, so they threaten your test suite's usefulness.
+- Fakes and contracts give us a more sustainable method for creating test doubles with validated assumptions and better reuse than the alternatives.
+
+This is a longer chapter than normal, so as a palette cleanser, you should explore an [example repo first](https://github.com/quii/go-fakes-and-contracts). In particular, check out the [planner test](https://github.com/quii/go-fakes-and-contracts/blob/main/domain/planner/planner_test.go).
 
 ---
 
@@ -22,7 +28,7 @@ It's easy to roll your eyes when people like me are pedantic about the nomenclat
 - Avoid latency and other performance issues
 - Unable to exercise non-happy path cases
 - Decoupling your build from another team's.
-    - You wouldn't want to prevent deployments if an engineer in another team accidentally shipped a bug
+  - You wouldn't want to prevent deployments if an engineer in another team accidentally shipped a bug
 
 In Go, you'll typically model a dependency with an interface, then implement your version to control the behaviour in a test. **Here are the kinds of test doubles covered in this post**.
 
@@ -41,35 +47,41 @@ We can construct test doubles in various ways, depending on how we're trying to 
 
 ```go
 type StubRecipeStore struct {
-  recipes []Recipe
-  err error
+	recipes []Recipe
+	err     error
 }
 
 func (s *StubRecipeStore) GetRecipes() ([]Recipe, error) {
-  return s.recipes, s.err
+	return s.recipes, s.err
 }
 
 // AddRecipes omitted for brevity
+```
 
+```go
 // in test, we can set up the stub to always return specific recipes, or an error
-stubStore := &StubRecipeStore{recipes: someRecipes}
+stubStore := &StubRecipeStore{
+	recipes: someRecipes,
+}
 ```
 
 **Spies** are like stubs but also record how they were called so the test can assert that the SUT calls the dependencies in specific ways.
 
 ```go
 type SpyRecipeStore struct {
-  AddCalls [][]Recipe
-  err error
+	AddCalls [][]Recipe
+	err      error
 }
 
 func (s *SpyRecipeStore) AddRecipes(r ...Recipe) error {
-  s.AddCalls = append(s.AddCalls, r)
-  return s.err
+	s.AddCalls = append(s.AddCalls, r)
+	return s.err
 }
 
 // GetRecipes omitted for brevity
+```
 
+```go
 // in test
 spyStore := &SpyRecipeStore{}
 sut := NewThing(spyStore)
@@ -82,8 +94,8 @@ sut.DoStuff()
 
 ```go
 // set up the mock with expected calls
-mockStore := &MockRecipeStore
-mockStore.WhenCalledWith(someRecipes).return(someError)
+mockStore := &MockRecipeStore{}
+mockStore.WhenCalledWith(someRecipes).Return(someError)
 
 // when the sut uses the dependency, if it doesn't call it with someRecipes, usually mocks will panic
 ```
@@ -209,11 +221,13 @@ Using fakes, **we can make assertions based on the final states of the respectiv
 ```go
 // take our lego-bricks and assemble the system for the test
 fakeAPI1 := fakes.NewAPI1()
-fakeAPI2 := // etc..
+fakeAPI2 := fakes.NewAPI2() // etc..
 customerService := customer.NewService(fakeAPI1, fakeAPI2, etc...)
 
 // create new customer
-newCustomerRequest := NewCustomerReq{...}
+newCustomerRequest := NewCustomerReq{
+	// ...
+}
 createdCustomer, err := customerService.New(newCustomerRequest)
 assert.NoErr(t, err)
 
@@ -221,7 +235,7 @@ assert.NoErr(t, err)
 fakeAPI1Customer := fakeAPI1.Get(createdCustomer.FakeAPI1Details.ID)
 assert.Equal(t, fakeAPI1Customer.SocialSecurityNumber, newCustomerRequest.SocialSecurityNumber)
 
-// repeat for the other apis we care about 
+// repeat for the other apis we care about
 
 // update customer
 updatedCustomerRequest := NewUpdateReq{SocialSecurityNumber: "123", InternalID: createdCustomer.InternalID}
@@ -235,6 +249,14 @@ assert.Equal(t, updatedFakeAPICustomer.SocialSecurityNumber, updatedCustomerRequ
 This is simpler to write and easier to read than checking various function call arguments made via spies.
 
 This approach lets us have tests that cut across broad parts of our system, letting us write more **meaningful** tests about the use cases we'd be discussing at stand-up whilst still executing exceptionally quickly.
+
+#### Fakes bring more of the benefits of encapsulation
+
+In the example above, the tests were not concerned with how the dependencies behaved beyond verifying their end state. We created the fake versions of the dependencies and injected them into the part of the system we're testing.
+
+With mocks/stubs, we'd have to set up each dependency to handle certain scenarios, return certain data, etc. This brings behaviour and implementation detail into your tests, weakening the benefits of encapsulation. 
+
+We model dependencies behind interfaces so that, as clients, _we don't have to care how it works_, but with a "mockist" approach, _we do have to care **in every test**_. 
 
 #### The maintenance costs of fakes
 
@@ -290,7 +312,7 @@ func (c API1Contract) Test(t *testing.T) {
 		expect.NoErr(t, err)
 		expect.Equal(t, newName, got.Name)
 	})
-	
+
 	// example of strange behaviours we didn't expect
 	t.Run("the system will not allow you to add 'Dave' as a customer", func(t *testing.T) {
 		var (
@@ -338,7 +360,7 @@ func (a *API1) CreateCustomer(ctx context.Context, name string) (planner.API1Cus
 	if name == "Dave" {
 		return planner.API1Customer{}, ErrDaveIsForbidden
 	}
-	
+
 	newCustomer := planner.API1Customer{
 		Name: name,
 		ID:   strconv.Itoa(a.i),
@@ -442,7 +464,7 @@ In our tests, we can then use the `XXXFunc` field to modify the behaviour of the
 failingAPI1 = NewAPI1Decorator(inmemory.NewAPI1())
 failingAPI1.UpdateCustomerFunc = func(ctx context.Context, id string, name string) error {
 	return errors.New("failed to update customer")
-})
+}
 ```
 
 However, this _is_ awkward and requires you to exercise some judgement. With this approach, you are losing the guarantees from your contract as you are introducing ad-hoc behaviour to your fake in tests.
@@ -504,7 +526,6 @@ func TestInMemoryPantry(t *testing.T) {
 		},
 	}.Test(t)
 }
-
 ```
 
 ```go
@@ -530,7 +551,6 @@ func TestSQLitePantry(t *testing.T) {
 		},
 	}.Test(t)
 }
-
 ```
 
 Whilst Docker et al. _do_ make running databases locally easier, they can still carry a significant performance overhead. Fakes with contracts allow you to use restrict the need to use the "heavier" dependency to only when you're validating the contract, and not needed for other kinds of tests.
@@ -576,4 +596,4 @@ So many times in my career, I have seen carefully written software written by ta
 
 Some teams rely on everyone deploying to a shared environment and testing there. The problem is this doesn't give you **isolated** feedback, and the **feedback is slow**. You still won't be able to construct different experiments with how your system works with other dependencies, at least not efficiently.
 
-**We have to tame this complexity by adopting more sophisticated ways of modelling our dependencies** to quickly test/experiment on our dev machines before it gets to production. Create realistic and manageable fakes of your dependencies, verified by contracts. Then, you can start writing more meaningful tests and experimenting with your system, making you more likely to succeed. 
+**We have to tame this complexity by adopting more sophisticated ways of modelling our dependencies** to quickly test/experiment on our dev machines before it gets to production. Create realistic and manageable fakes of your dependencies, verified by contracts. Then, you can start writing more meaningful tests and experimenting with your system, making you more likely to succeed.

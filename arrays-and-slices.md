@@ -338,6 +338,8 @@ no sense, but the test compiles! So while using `reflect.DeepEqual` is
 a convenient way of comparing slices \(and other things\) you must be careful
 when using it.
 
+(From Go 1.21, [slices](https://pkg.go.dev/slices#pkg-overview) standard package is available, which has [slices.Equal](https://pkg.go.dev/slices#Equal) function to do a simple shallow compare on slices, where you don't need to worry about the types like the above case. Note that this function expects the elements to be [comparable](https://pkg.go.dev/builtin#comparable). So, it can't be applied to slices with non-comparable elements like 2D slices.)  
+
 Change the test back again and run it. You should have test output like the following
 
 `sum_test.go:30: got [] want [3 9]`
